@@ -2,6 +2,7 @@
 
 LOG_FILE="/var/log/user_management.log"
 PASSWORD_FILE="/var/secure/user_passwords.txt"
+SECURE_DIR="/var/secure"
 
 # Function to log messages
 log_message() {
@@ -65,6 +66,14 @@ set_password() {
     log_message "Error setting password for user $username."
   fi
 }
+
+# Ensure the secure directory exists and set appropriate permissions
+if mkdir -p $SECURE_DIR && chmod 700 $SECURE_DIR && chown root:root $SECURE_DIR; then
+  log_message "Secure directory created or already exists."
+else
+  log_message "Error creating or securing the secure directory."
+  exit 1
+fi
 
 # Ensure the password file exists and set appropriate permissions
 if touch $PASSWORD_FILE && chmod 600 $PASSWORD_FILE && chown root:root $PASSWORD_FILE; then
