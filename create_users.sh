@@ -33,6 +33,7 @@ create_user() {
       log_message "User $username created and added to group $group_name."
     else
       log_message "Error creating user $username."
+      return 1
     fi
   else
     log_message "User $username already exists."
@@ -43,6 +44,11 @@ create_user() {
 set_permissions() {
   username=$1
   home_dir="/home/$username"
+  if [ ! -d "$home_dir" ]; then
+    log_message "Home directory $home_dir not found for user $username."
+    return 1
+  fi
+
   if chown $username:$username $home_dir && chmod 700 $home_dir; then
     log_message "Permissions set for $home_dir."
   else
@@ -95,9 +101,10 @@ done
 while true; do
   read -p "Enter username: " username
   read -p "Enter group for $username: " group
-  create_user $username $group
-  set_permissions $username
-  set_password $username
+  if create_user $username $group; then
+    set_permissions $username
+    set_password $username
+  fi
 
   read -p "Do you want to add another user? (yes/no): " choice
   if [[ "$choice" != "yes" ]]; then
